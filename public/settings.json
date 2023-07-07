@@ -375,13 +375,13 @@
         ]
     },
     "wi_format": "[Details of the fictional world the RP is set in:\n{0}]\n",
-    "openai_model": "gpt-3.5-turbo",
+    "openai_model": "gpt-4",
     "claude_model": "claude-instant-v1",
     "windowai_model": "",
     "jailbreak_system": false,
     "reverse_proxy": "",
     "legacy_streaming": false,
-    "chat_completion_source": "openai",
+    "chat_completion_source": "windowai",
     "max_context_unlocked": false,
     "use_openrouter": false
 }
