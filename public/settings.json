@@ -1,9 +1,9 @@
 {
-    "username": "Junko",
+    "username": "Yuyuko",
     "api_server": "http://localhost:5000/api",
     "api_server_textgenerationwebui": "http://127.0.0.1:7860",
     "preset_settings": "Classic-Pygmalion-6b",
-    "user_avatar": "1686607131457.png",
+    "user_avatar": "1689641555454.png",
     "amount_gen": 180,
     "max_context": 3983,
     "main_api": "poe",
@@ -84,6 +84,7 @@
         "play_message_sound": false,
         "play_sound_unfocused": true,
         "auto_save_msg_edits": false,
+        "confirm_message_delete": true,
         "sort_field": "name",
         "sort_order": "asc",
         "sort_rule": null,
@@ -136,16 +137,21 @@
             "macro": false
         },
         "personas": {
-            "1686607131457.png": "Junko"
+            "1686607131457.png": "Junko",
+            "1689641555454.png": "Yuyuko"
         },
-        "default_persona": "1686607131457.png",
+        "default_persona": null,
         "persona_descriptions": {
             "1686607131457.png": {
-                "description": "Junko is a sagacious spirit. She looks completely human. She has wide hips, and a large bust. She is quite curvy.",
+                "description": "{{user}} is a sagacious spirit. She looks completely human. She has wide hips, and a large bust. She is quite curvy.",
+                "position": 0
+            },
+            "1689641555454.png": {
+                "description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
                 "position": 0
             }
         },
-        "persona_description": "Junko is a sagacious spirit. She looks completely human. She has wide hips, and a large bust. She is quite curvy.",
+        "persona_description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
         "persona_description_position": 0
     },
     "poe_settings": {
@@ -209,6 +215,7 @@
             "showDefault": false
         },
         "dice": {},
+        "regex": [],
         "tts": {
             "voiceMap": "",
             "ttsEnabled": false,
@@ -251,7 +258,33 @@
         "quickReply": {
             "quickReplyEnabled": false,
             "numberOfSlots": 5,
-            "quickReplySlots": []
+            "quickReplySlots": [
+                {
+                    "mes": "",
+                    "label": "",
+                    "enabled": true
+                },
+                {
+                    "mes": "",
+                    "label": "",
+                    "enabled": true
+                },
+                {
+                    "mes": "",
+                    "label": "",
+                    "enabled": true
+                },
+                {
+                    "mes": "",
+                    "label": "",
+                    "enabled": true
+                },
+                {
+                    "mes": "",
+                    "label": "",
+                    "enabled": true
+                }
+            ]
         }
     },
     "context_settings": {
@@ -284,15 +317,11 @@
         }
     ],
     "tag_map": {
-        "Aqua.png": [],
-        "Butterwick Milk Farm.png": [],
-        "Darkness.png": [],
         "Hecatia Lapislazuli.png": [],
         "Kasen Ibaraki.png": [],
         "Kochiya Sanae.png": [],
         "Lucifer, The Milf Demon.png": [],
         "Lucoa.png": [],
-        "Megumin.png": [],
         "Patchouli Knowledge.png": [],
         "Princess Peach.png": [],
         "Rouge the Bat.png": [],
@@ -305,7 +334,14 @@
         "All Female Train.png": [],
         "Summer.png": [],
         "The All-Female Passenger Train.png": [],
-        "Ahri.png": []
+        "Hecatia Lapislazuli_1.png": [],
+        "Hecatia Lapislazuli_1_1.png": [],
+        "Eirin Yagokoro.png": [],
+        "Ran Yakumo.png": [],
+        "Kaguya Houraisan.png": [],
+        "The Highschool Elevator.png": [],
+        "Keika.png": [],
+        "Yukari Yakumo_1.png": []
     },
     "temp_novel": 1.11,
     "rep_pen_novel": 1.11,
@@ -383,5 +419,6 @@
     "legacy_streaming": false,
     "chat_completion_source": "windowai",
     "max_context_unlocked": false,
-    "use_openrouter": false
+    "use_openrouter": false,
+    "api_url_scale": ""
 }
