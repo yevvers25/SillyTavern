@@ -1923,6 +1923,12 @@ grammarly-extension {
     font-size: calc(var(--mainFontSize) - 0.1rem);
     font-weight: bold;
     margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.rm_stats_button {
+    cursor: pointer;
 }
 
 /* Focus */
@@ -1950,6 +1956,17 @@ grammarly-extension {
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
+}
+
+.rm_stat_block {
+    display: flex;
+    justify-content: space-between;
+}
+
+.user_stats_button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
 }
 
 .large_dialogue_popup {

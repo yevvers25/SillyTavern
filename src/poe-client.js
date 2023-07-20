@@ -26,7 +26,21 @@ const http = require('http');
 const https = require('https');
 const _ = require('lodash');
 
+const UserAgent = require('user-agents');
+
 const directory = __dirname;
+
+const graphHashes = {
+    'chatHelpers_sendMessageMutation_Mutation': "5fd489242adf25bf399a95c6b16de9665e521b76618a97621167ae5e11e4bce4",
+    'chatHelpers_addMessageBreakEdgeMutation_Mutation': "9450e06185f46531eca3e650c26fa8524f876924d1a8e9a3fb322305044bdac3",
+    'subscriptionsMutation': "61c1bfa1ba167fd0857e3f6eaf9699e847e6c3b09d69926b12b5390076fe36e6",
+    'ChatListPaginationQuery': "1ba2ab6a4d133b585a848f04bcb10a6bf33c0bf7f07a86aa2970b88900d82ed6",
+    'BotSwitcherModalQuery': "54023ee8b691543982b2819491532532c317b899918e049617928137c26d47f5",
+    'MessageDeleteConfirmationModal_deleteMessageMutation_Mutation': "8d1879c2e851ba163badb6065561183600fc1b9de99fc8b48b654eb65af92bed",
+    'viewerStateUpdated': "ee640951b5670b559d00b6928e20e4ac29e33d225237f5bdfcb043155f16ef54",
+    'messageAdded': "343d50a327e93b9104af175f1320fe157a377f1dbb33eaeb18c6a95a11d1b512",
+    'messageLimitUpdated': "38a2aada35e6cf3c47d9062c84533373cad2ec9205b37919a4ba8e5386115a17",
+}
 
 function uuidv4() {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
@@ -64,7 +78,10 @@ const cached_bots = {};
 const logger = console;
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
-const user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
+const userAgent = new UserAgent();
+const user_agent = userAgent.toString();
+
+//const user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36";
 
 function extractFormKey(html) {
     const scriptRegex = /<script>if\(.+\)throw new Error;(.+)<\/script>/;
@@ -81,7 +98,7 @@ function extractFormKey(html) {
     }
     const formKey = formKeyList.join("");
 
-    return formKey.slice(0, -1);
+    return formKey.slice(0, -2);
 }
 
 
@@ -258,116 +275,51 @@ function load_queries() {
     }
 }
 
-function generate_payload(query, variables) {
-    return {
-        query: queries[query],
-        variables: variables,
-    }
+
+function generate_recv_payload(variables) {
+    let payload = [
+        {
+            "category": "poe/bot_response_speed",
+            "data": variables,
+        }
+    ];
+
+    if (Math.random() > 0.9) {
+        payload.push({
+            "category": "poe/statsd_event",
+            "data": {
+                "key": "poe.speed.web_vitals.INP",
+                "value": Math.round(Math.random() * 25) + 100,
+                "category": "time",
+                "path": "/[handle]",
+                "extra_data": {},
+            },
+        });
+
+    };
+
+    return payload;
 }
 
-async function request_with_retries(method, attempts = 10) {
-    for (let i = 0; i < attempts; i++) {
+function generate_payload(query, variables) {
+    if (query == 'recv') {
+        return generate_recv_payload(variables);
+    }
 
-        try {
-            var ResponseHasFreeSocket = false;
-            const response = await method();
-            if (response.status === 200) {
+    const object = {
+        query: queries[query],
+        variables: variables,
+    };
 
-                const circularReference = new Set();
-                const responseString = JSON.stringify(response, function (key, value) {
-                    if (typeof value === 'object' && value !== null) {
-                        if (circularReference.has(value)) {
-                            return;
-                        }
-                        circularReference.add(value);
-                    }
-                    if (key === 'data' && typeof value === 'object' && value !== null) {
-                        return '[removed data spam]';
-                    }
-                    if (typeof value === 'object' && value !== null) {
-                        return Array.isArray(value) ? value : { ...value };
-                    }
-
-                    if (key === "freeSockets" && key.length) {
-                        ResponseHasFreeSocket = true;
-                    }
-                    if (key === "Cookie" || key === "set-cookie" || key === "Set-Cookie") {
-                        return "[PB COOKIE DATA REDACTED BY ST CODE]"
-                    }
-                    if (typeof value === 'string' && value.includes('p-b=')) {
-                        const startIndex = value.indexOf('p-b=');
-                        const endIndex = value.indexOf(';', startIndex);
-                        if (endIndex === -1) {
-                            return value.substring(0, startIndex) + '[P-B COOKIE REDACTED BY ST]';
-                        }
-                        return value.substring(0, startIndex) + '[P-B COOKIE REDACTED BY ST]' + value.substring(endIndex);
-                    }
-                    if (typeof value === 'string' && value.includes('__cf_bm=')) {
-                        const startIndex = value.indexOf('__cf_bm=');
-                        const endIndex = value.indexOf(';', startIndex);
-                        if (endIndex === -1) {
-                            return value.substring(0, startIndex) + '[Cloudflare COOKIE REDACTED BY ST]';
-                        }
-                        return value.substring(0, startIndex) + '[CloudFlare COOKIE REDACTED BY ST]' + value.substring(endIndex);
-                    }
-
-
-                    return value;
-                }, 4);
-                fs.writeFile('poe-success.log', responseString, 'utf-8', () => {
-                    //console.log('Successful query logged to poe-success.log');
-                });
-
-
-                return response;
-            }
-
-            //this never actually gets seen as any non-200 response jumps to the catch code
-            logger.warn(`Server returned a status code of ${response.status} while downloading. Retrying (${i + 1}/${attempts})...`);
-        } catch (err) {
-            var ErrorHasFreeSocket = false;
-            const circularReference = new Set();
-            const errString = JSON.stringify(err, function (key, value) {
-                if (key === 'data' && Array.isArray(value)) {
-                    return '[removed data spam]';
-                } else if (typeof value === 'object' && value !== null) {
-                    if (circularReference.has(value)) {
-                        return '[Circular]';
-                    }
-                    circularReference.add(value);
-                }
-                if (key === "Cookie" || key === "set-cookie" || key === "Set-Cookie") {
-                    return "[PB COOKIE DATA REDACTED BY ST CODE]"
-                }
-                if (typeof value === 'string' && value.includes('p-b=')) {
-                    const startIndex = value.indexOf('p-b=');
-                    const endIndex = value.indexOf(';', startIndex);
-                    if (endIndex === -1) {
-                        return value.substring(0, startIndex) + '[P-B COOKIE REDACTED BY ST]';
-                    }
-                    return value.substring(0, startIndex) + '[P-B COOKIE REDACTED BY ST]' + value.substring(endIndex);
-                }
-                if (typeof value === 'string' && value.includes('__cf_bm=')) {
-                    const startIndex = value.indexOf('__cf_bm=');
-                    const endIndex = value.indexOf(';', startIndex);
-                    if (endIndex === -1) {
-                        return value.substring(0, startIndex) + '[Cloudflare COOKIE REDACTED BY ST]';
-                    }
-                    return value.substring(0, startIndex) + '[CloudFlare COOKIE REDACTED BY ST]' + value.substring(endIndex);
-                }
-                if (key === "freeSockets" && key.length) {
-                    ErrorHasFreeSocket = true;
-                }
-                return value;
-            }, 4);
-            fs.writeFile('poe-error.log', errString, 'utf-8', (err) => {
-                if (err) throw err;
-                console.log(`Error saved to poe-error.log Free socket? ${ErrorHasFreeSocket}`);
-            });
-            await delay(100)
+    if (graphHashes.hasOwnProperty(query)) {
+        delete object.query;
+        object.queryName = query;
+        object.extensions = {
+            hash: graphHashes[query],
         }
     }
-    throw new Error(`Failed to download too many times.`);
+
+    return object;
 }
 
 function findKey(obj, key, path = []) {
@@ -420,6 +372,39 @@ class Client {
     constructor(auto_reconnect = false, use_cached_bots = false) {
         this.auto_reconnect = auto_reconnect;
         this.use_cached_bots = use_cached_bots;
+
+        this._fetch = async (url, options) => {
+            const retry = 20;
+            const retryMsInterval = 300;
+            // Cohee: ONLY NODE DEFAULT FETCH WORKS
+            // DON'T ASK ME WHY, I DON'T KNOW
+            const thisFetch = fetch || require('node-fetch').default;
+            logger.info(options, `fetch: ${url}, options:`);
+            return new Promise(async (resolve, reject) => {
+                for (let i = 0; i <= retry; ++i) {
+                    if (i > 0) {
+                        logger.info(`retrying ${url}, ${i}/${retry}`);
+                        await delay(retryMsInterval);
+                    }
+                    try {
+                        const retryRes = await thisFetch(url, { ...options });
+                        if (retryRes.ok) {
+                            return resolve(retryRes);
+                        }
+                        else {
+                            logger.error(`\tfetch failed: ${url}, ${retryRes.status}, ${retryRes.statusText}`);
+                            if (+retryRes.status === 400) {
+                                logger.error(`\t[Note] Make sure you put the correct cookie.`);
+                            }
+                        }
+                    }
+                    catch (e) {
+                        logger.error(e);
+                    }
+                }
+                reject(new Error(`Failed to fetch ${url} after ${retry} retries`));
+            });
+        };
     }
 
     async reconnect() {
@@ -445,11 +430,8 @@ class Client {
             };
             logger.info(`Proxy enabled: ${proxy}`);
         }
-        const cookies = `p-b=${token}; Domain=poe.com`;
+        const cookies = `p-b=${token}`;
         this.headers = {
-            "User-Agent": user_agent,
-            "Referrer": "https://poe.com/",
-            "Origin": "https://poe.com",
             "Cookie": cookies,
         };
         this.session.defaults.headers.common = this.headers;
@@ -484,9 +466,13 @@ class Client {
         const botNameKeyName = 'chatOfBotHandle'
         const defaultBotKeyName = 'defaultBotNickname'
         //console.log('this.session.get(this.home_url)')
-        const r = await request_with_retries(() => this.session.post(this.home_url));
+        const r = await this._fetch(this.home_url, {
+            method: 'GET',
+            headers: { cookie: `p-b=${this.token}` },
+        });
+        const text = await r.text();
         const jsonRegex = /<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/;
-        const jsonText = jsonRegex.exec(r.data)[1];
+        const jsonText = jsonRegex.exec(text)[1];
         const nextData = JSON.parse(jsonText);
 
         const viewerPath = findKey(nextData, viewerKeyName);
@@ -530,7 +516,7 @@ class Client {
             console.log("-----------------")
         }
 
-        this.formkey = extractFormKey(r.data);
+        this.formkey = extractFormKey(text);
         this.viewer = viewer;
 
         //old hard coded message no longer needed
@@ -567,7 +553,7 @@ class Client {
             const promise = new Promise(async (resolve, reject) => {
                 try {
                     const url = `https://poe.com/_next/data/${this.next_data.buildId}/${bot.displayName}.json`;
-                    let r;
+                    let r, botData;
 
                     if (this.use_cached_bots && cached_bots[url]) {
                         r = cached_bots[url];
@@ -575,11 +561,15 @@ class Client {
                     else {
                         logger.info(`Downloading ${bot.displayName}`);
                         //console.log('this.session.get(url)')
-                        r = await request_with_retries(() => this.session.get(url), retries);
-                        cached_bots[url] = r;
+                        r = await this._fetch(url, {
+                            method: 'GET',
+                            headers: { cookie: `p-b=${this.token}` },
+                        });
+                        botData = await r.json();
+                        cached_bots[url] = botData;
                     }
 
-                    const chatData = r.data.pageProps.payload?.chatOfBotDisplayName || r.data.pageProps.data?.chatOfBotHandle;
+                    const chatData = botData.pageProps.payload?.chatOfBotDisplayName || botData.pageProps.data?.chatOfBotHandle;
                     bots[chatData.defaultBotObject.nickname] = chatData;
                     resolve();
 
@@ -609,8 +599,11 @@ class Client {
     async get_channel_data(channel = null) {
         logger.info('Downloading channel data...');
         //console.log('this.session.get(this.settings_url)')
-        const r = await request_with_retries(() => this.session.get(this.settings_url));
-        const data = r.data;
+        const r = await this._fetch(this.settings_url, {
+            method: 'GET',
+            headers: { cookie: `p-b=${this.token}` },
+        });
+        const data = await r.json();
 
         return data.tchannelData;
     }
@@ -628,23 +621,35 @@ class Client {
             const payload = generate_payload(queryName, variables);
             if (queryDisplayName) payload['queryName'] = queryDisplayName;
             const scramblePayload = JSON.stringify(payload);
-            const _headers = this.gql_headers;
-            _headers['poe-tag-id'] = md5()(scramblePayload + this.formkey + "WpuLMiXEKKE98j56k");
+            const _headers = Object.assign({}, this.gql_headers);
+            _headers['poe-tag-id'] = md5()(scramblePayload + this.formkey + "IjKnJyR3605rLc1Ek");
             _headers['poe-formkey'] = this.formkey;
+            _headers['content-type'] = 'application/json';
             //console.log(`------GQL HEADERS-----`)
             //console.log(this.gql_headers)
             //console.log(`----------------------`)
-            const r = await request_with_retries(() => this.session.post(this.gql_url, payload, { headers: this.gql_headers }));
-            if (!(r?.data?.data)) {
-                logger.warn(`${queryName} returned an error | Retrying (${i + 1}/20)`);
+            const url = queryName == 'recv' ? this.gql_recv_url : this.gql_url;
+            const r = await this._fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(payload),
+                headers: _headers,
+            });
+
+            if (queryName == 'recv') {
+                return null;
+            }
+
+            const data = await r.json();
+            if (!(data?.data)) {
+                logger.warn(`${queryName} returned an error: ${r.status} ${r.statusText} | Retrying (${i + 1}/20)`);
                 await delay(2000);
                 continue;
             }
 
-            return r.data;
+            return data;
         }
 
-        throw new Error(`${queryName} failed too many times.`);
+        console.error(`${queryName} failed too many times.`);
     }
 
     async ws_ping() {
@@ -672,23 +677,25 @@ class Client {
 
     async subscribe() {
         logger.info("Subscribing to mutations")
-        await this.send_query("SubscriptionsMutation", {
+        await this.send_query("subscriptionsMutation", {
             "subscriptions": [
                 {
                     "subscriptionName": "messageAdded",
-                    "query": queries["MessageAddedSubscription"]
+                    "query": null,
+                    "queryHash": graphHashes['messageAdded'],
                 },
                 {
                     "subscriptionName": "viewerStateUpdated",
-                    "query": queries["ViewerStateUpdatedSubscription"]
+                    "query": null,
+                    "queryHash": graphHashes['viewerStateUpdated'],
                 },
                 {
-                    "subscriptionName": "viewerMessageLimitUpdated",
-                    "query": queries["ViewerMessageLimitUpdatedSubscription"]
+                    "subscriptionName": "messageLimitUpdated",
+                    "query": null,
+                    "queryHash": graphHashes['messageLimitUpdated'],
                 },
             ]
-        },
-            'subscriptionsMutation');
+        }, "subscriptionsMutation");
     }
 
     ws_run_thread() {
@@ -810,14 +817,21 @@ class Client {
 
         console.log(`Sending message to ${chatbot}: ${message}`);
 
-        const messageData = await this.send_query("SendMessageMutation", {
+        const messageData = await this.send_query("chatHelpers_sendMessageMutation_Mutation", {
+            "attachments": [],
             "bot": chatbot,
             "query": message,
             "chatId": this.bots[chatbot]["chatId"],
             "source": null,
             "clientNonce": generateNonce(),
             "sdid": this.device_id,
-            "withChatBreak": with_chat_break
+            "withChatBreak": with_chat_break,
+            "source": {
+                "sourceType": "chat_input",
+                "chatInputMetadata": {
+                    useVoiceRecord: false,
+                },
+            }
         });
 
         delete this.active_messages["pending"];
@@ -882,39 +896,57 @@ class Client {
 
         delete this.active_messages[humanMessageId];
         delete this.message_queues[humanMessageId];
+
+        setTimeout(async () => {
+            this.send_query("recv", {
+              "bot": chatbot,
+              "time_to_first_typing_indicator": 300,
+              "time_to_first_subscription_response": 600,
+              "time_to_full_bot_response": 1100,
+              "full_response_length": lastText.length + 1,
+              "full_response_word_count": lastText.split(" ").length + 1,
+              "human_message_id": humanMessageId,
+              "bot_message_id": messageId,
+              "chat_id": this.bots[chatbot]["chatId"],
+              "bot_response_status": "success",
+            });
+            await delay(500);
+        })
     }
 
     async send_chat_break(chatbot) {
         logger.info(`Sending chat break to ${chatbot}`);
-        const result = await this.send_query("AddMessageBreakMutation", {
+        const result = await this.send_query("chatHelpers_addMessageBreakEdgeMutation_Mutation", {
             "chatId": this.bots[chatbot]["chatId"]
         });
-        return result["data"]["messageBreakCreate"]["message"];
+        return result["data"]["messageBreakEdgeCreate"]["message"];
     }
 
-    async get_message_history(chatbot, count = 25, cursor = null) {
+    async get_message_history(chatbot, count = 5, cursor = null) {
         logger.info(`Downloading ${count} messages from ${chatbot}`);
         const result = await this.send_query("ChatListPaginationQuery", {
             "count": count,
             "cursor": cursor,
             "id": this.bots[chatbot]["id"]
-        });
+        }, "ChatListPaginationQuery");
         return result["data"]["node"]["messagesConnection"]["edges"];
     }
 
-    async delete_message(message_ids) {
+    async delete_message(message_ids, chatbot) {
         logger.info(`Deleting messages: ${message_ids}`);
         if (!Array.isArray(message_ids)) {
             message_ids = [parseInt(message_ids)];
         }
-        const result = await this.send_query("DeleteMessageMutation", {
-            "messageIds": message_ids
+        const result = await this.send_query("MessageDeleteConfirmationModal_deleteMessageMutation_Mutation", {
+            "messageIds": message_ids,
+            "connections": [`client:${this.bots[chatbot]["id"]}:__ChatMessagesView_chat_messagesConnection_connection`]
         });
     }
 
     async purge_conversation(chatbot, count = -1) {
+        //return this.send_chat_break(chatbot);
         logger.info(`Purging messages from ${chatbot}`);
-        let last_messages = (await this.get_message_history(chatbot, 50)).reverse();
+        let last_messages = (await this.get_message_history(chatbot, 5)).reverse();
         while (last_messages.length) {
             const message_ids = [];
             for (const message of last_messages) {
@@ -925,12 +957,12 @@ class Client {
                 message_ids.push(message["node"]["messageId"]);
             }
 
-            await this.delete_message(message_ids);
+            await this.delete_message(message_ids, chatbot);
 
             if (count === 0) {
                 return;
             }
-            last_messages = (await this.get_message_history(chatbot, 50)).reverse();
+            last_messages = (await this.get_message_history(chatbot, 5)).reverse();
         }
         logger.info("No more messages left to delete.");
     }

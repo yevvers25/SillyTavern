@@ -10,6 +10,7 @@ public/css/bg_load.css
 public/themes/
 public/OpenAI Settings/
 public/scripts/extensions/third-party/
+public/stats.json
 /uploads/
 *.jsonl
 config.conf
@@ -24,4 +25,6 @@ poe_device.json
 /backups/
 public/movingUI/
 poe-error.log
+poe-error-raw.log
 poe-success.log
+poe-success-raw.log
