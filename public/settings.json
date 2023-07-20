@@ -45,6 +45,9 @@
         "skip_special_tokens": true,
         "streaming": false,
         "streaming_url": "ws://127.0.0.1:5005/api/v1/stream",
+        "mirostat_mode": 0,
+        "mirostat_tau": 5,
+        "mirostat_eta": 0.1,
         "rep_pen_size": 0
     },
     "swipes": true,
@@ -78,7 +81,7 @@
         "fast_ui_mode": false,
         "avatar_style": 0,
         "chat_display": 0,
-        "sheld_width": 1,
+        "chat_width": 50,
         "never_resize_avatars": false,
         "show_card_avatar_urls": false,
         "play_message_sound": false,
@@ -101,6 +104,7 @@
         "waifuMode": false,
         "movingUI": false,
         "movingUIState": {},
+        "movingUIPreset": "",
         "noShadows": false,
         "theme": "Default (Dark) 1.7.1",
         "auto_swipe": false,
@@ -147,12 +151,14 @@
                 "position": 0
             },
             "1689641555454.png": {
-                "description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
+                "description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large pillowy breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
                 "position": 0
             }
         },
-        "persona_description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
-        "persona_description_position": 0
+        "persona_description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large pillowy breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
+        "persona_description_position": 0,
+        "custom_stopping_strings": "",
+        "sheld_width": 1
     },
     "poe_settings": {
         "bot": "chinchilla",
@@ -285,6 +291,11 @@
                     "enabled": true
                 }
             ]
+        },
+        "randomizer": {
+            "controls": [],
+            "fluctuation": 0.1,
+            "enabled": false
         }
     },
     "context_settings": {
@@ -341,7 +352,12 @@
         "Kaguya Houraisan.png": [],
         "The Highschool Elevator.png": [],
         "Keika.png": [],
-        "Yukari Yakumo_1.png": []
+        "Yukari Yakumo_1.png": [],
+        "Eientei.png": [],
+        "Fujiwara no Mokou.png": [],
+        "Keine Kamishirasawa.png": [],
+        "Reisen.png": [],
+        "Aya Shameimaru.png": []
     },
     "temp_novel": 1.11,
     "rep_pen_novel": 1.11,
@@ -414,11 +430,11 @@
     "openai_model": "gpt-4",
     "claude_model": "claude-instant-v1",
     "windowai_model": "",
+    "openrouter_model": "OR_Website",
     "jailbreak_system": false,
     "reverse_proxy": "",
     "legacy_streaming": false,
     "chat_completion_source": "windowai",
     "max_context_unlocked": false,
-    "use_openrouter": false,
     "api_url_scale": ""
 }
