@@ -1,9 +1,9 @@
 {
-    "username": "Yuyuko",
+    "username": "Junko",
     "api_server": "http://localhost:5000/api",
     "api_server_textgenerationwebui": "http://127.0.0.1:7860",
     "preset_settings": "Classic-Pygmalion-6b",
-    "user_avatar": "1689641555454.png",
+    "user_avatar": "1686607131457.png",
     "amount_gen": 180,
     "max_context": 3983,
     "main_api": "poe",
@@ -147,7 +147,7 @@
         "default_persona": null,
         "persona_descriptions": {
             "1686607131457.png": {
-                "description": "{{user}} is a sagacious spirit. She looks completely human. She has wide hips, and a large bust. She is quite curvy.",
+                "description": "{{user}} is a sagacious spirit who has a deep grudge against a race of people on the moon. People do not know this, because she appears very calm and serene, often times, even sweet. She is approachable and has a good heart for people that have not wronged her. She looks completely human. She has wide hips, and a large bust. She is quite curvy. Junko is quite tall.",
                 "position": 0
             },
             "1689641555454.png": {
@@ -155,7 +155,7 @@
                 "position": 0
             }
         },
-        "persona_description": "{{user}} is a ghost princess. she appears almost exactly like a human. she has soft, wavy pink hair, pink eyes, and she is a bit short. Yuyuko's body is slightly chubby, with wide hips and large pillowy breasts. she loves to be pampered and coddled and prefers to be on the bottom. One simple look at Yuyuko's irresistible beauty will have people head over heels for her.",
+        "persona_description": "{{user}} is a sagacious spirit who has a deep grudge against a race of people on the moon. People do not know this, because she appears very calm and serene, often times, even sweet. She is approachable and has a good heart for people that have not wronged her. She looks completely human. She has wide hips, and a large bust. She is quite curvy. Junko is quite tall.",
         "persona_description_position": 0,
         "custom_stopping_strings": "",
         "sheld_width": 1
@@ -357,7 +357,10 @@
         "Fujiwara no Mokou.png": [],
         "Keine Kamishirasawa.png": [],
         "Reisen.png": [],
-        "Aya Shameimaru.png": []
+        "Aya Shameimaru.png": [],
+        "Aqua.png": [],
+        "Darkness.png": [],
+        "Megumin.png": []
     },
     "temp_novel": 1.11,
     "rep_pen_novel": 1.11,
