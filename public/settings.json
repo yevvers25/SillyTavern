@@ -1,12 +1,12 @@
 {
     "username": "Junko",
     "api_server": "http://localhost:5000/api",
-    "api_server_textgenerationwebui": "http://127.0.0.1:7860",
+    "api_server_textgenerationwebui": "http://127.0.0.1:7860/api",
     "preset_settings": "Classic-Pygmalion-6b",
     "user_avatar": "1686607131457.png",
     "amount_gen": 180,
     "max_context": 3983,
-    "main_api": "poe",
+    "main_api": "novel",
     "world_info": {
         "globalSelect": [
             "main_lorebooks_hebelover_Touhou-AkyuuKnowledge_sillytavern"
@@ -52,9 +52,11 @@
     },
     "swipes": true,
     "horde_settings": {
-        "models": [],
+        "models": [
+            "asmodeus"
+        ],
         "auto_adjust_response_length": true,
-        "auto_adjust_context_length": false,
+        "auto_adjust_context_length": true,
         "trusted_workers_only": false
     },
     "power_user": {
